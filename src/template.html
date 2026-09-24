@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AMT/IMT 121 β: Classical Mechanics II - Interactive Beam Studio</title>
+<meta name="description" content="Build any beam, then study its reactions, shear force and bending moment diagrams and deflection, with full worked solutions.">
+<style>
+/*__FONTS__*/
+/*__CSS__*/
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <pattern id="hatchP" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="5" class="hatch-stroke"/>
+    </pattern>
+  </defs>
+</svg>
+
+<header class="mast">
+  <div class="wrap mast-in">
+    <div>
+      <p class="course">AMT/IMT 121 β: Classical Mechanics II (Statics)</p>
+      <h1>Interactive Beam Studio</h1>
+      <p class="dept">University of Ruhuna — Department of Mathematics</p>
+    </div>
+    <button id="themeBtn" class="btn ghost small" type="button" aria-label="Switch between light and dark theme">
+      <svg viewBox="0 0 20 20" aria-hidden="true" class="ico"><path d="M10 2.5a7.5 7.5 0 1 0 0 15 7.5 7.5 0 0 0 0-15Zm0 1.6v11.8a5.9 5.9 0 0 1 0-11.8Z"/></svg>
+      <span id="themeLabel">Dark</span>
+    </button>
+  </div>
+</header>
+
+<nav class="toolbar" aria-label="Presets and actions">
+  <div class="wrap tb-in">
+    <div class="presets" role="group" aria-label="Load a beam">
+      <span class="tb-label">Course beams</span>
+      <button type="button" class="chip" data-preset="simplySupported">Simply supported</button>
+      <button type="button" class="chip" data-preset="cantilever">Cantilever</button>
+      <button type="button" class="chip" data-preset="fixed">Fixed beam</button>
+      <button type="button" class="chip" data-preset="overhanging">Overhanging</button>
+      <button type="button" class="chip" data-preset="continuous">Continuous</button>
+      <span class="tb-label">More</span>
+      <button type="button" class="chip" data-preset="propped">Propped cantilever</button>
+      <button type="button" class="chip" data-preset="gerber">Beam with a hinge</button>
+      <button type="button" class="chip" data-preset="triangle">Triangular load</button>
+      <button type="button" class="chip" data-preset="couple">Applied couple</button>
+    </div>
+    <div class="tb-actions">
+      <button type="button" class="btn small" id="undoBtn" title="Undo (Ctrl+Z)">Undo</button>
+      <button type="button" class="btn small" id="redoBtn" title="Redo (Ctrl+Shift+Z)">Redo</button>
+      <button type="button" class="btn small" id="clearBtn">Clear beam</button>
+      <button type="button" class="btn small" id="linkBtn" title="Copy a link that opens this exact beam">Copy link</button>
+      <button type="button" class="btn small toggle" id="practiceBtn" aria-pressed="false">Test yourself</button>
+    </div>
+  </div>
+</nav>
+
+<main class="wrap studio">
+  <aside class="side" aria-label="Beam set-up">
+    <section class="card" id="beamCard">
+      <h2>Beam</h2>
+      <div class="grid2">
+        <label class="fld"><span>Span <i class="mv">L</i></span><span class="inp"><input id="inL" type="number" min="1" max="60" step="0.5" inputmode="decimal"><em>m</em></span></label>
+        <label class="fld"><span>Snap to</span><span class="inp"><select id="inSnap"><option value="0.05">0.05</option><option value="0.1">0.1</option><option value="0.25">0.25</option><option value="0.5">0.5</option><option value="1">1</option></select><em>m</em></span></label>
+        <label class="fld"><span>Young's modulus <i class="mv">E</i></span><span class="inp"><input id="inE" type="number" min="0.001" step="10" inputmode="decimal"><em>GPa</em></span></label>
+        <label class="fld"><span>Second moment <i class="mv">I</i></span><span class="inp"><input id="inI" type="number" min="0.001" step="10" inputmode="decimal"><em>×10⁶ mm⁴</em></span></label>
+      </div>
+      <p class="ei">Flexural rigidity <i class="mv">EI</i> = <b id="eiOut">–</b> kN·m²</p>
+    </section>
+
+    <section class="card editor" id="editorCard" aria-live="polite">
+      <div class="empty-ed" id="edEmpty">
+        <h2>Selected item</h2>
+        <p>Click anything on the beam to edit it, or drag it along the beam to move it.</p>
+      </div>
+      <div id="edBody" hidden></div>
+    </section>
+
+    <section class="card" id="listCard">
+      <h2>On the beam</h2>
+      <ol class="el-list" id="elList"></ol>
+    </section>
+  </aside>
+
+  <section class="stage" aria-label="Beam and diagrams">
+    <div class="status" id="status"></div>
+
+    <div class="palette" id="palette" aria-label="Add to the beam">
+      <div class="pal-group"><span class="pal-h">Supports</span>
+        <button type="button" class="tile" data-add="support:pinned"><span class="g" data-glyph="pinned"></span><span>Pinned</span></button>
+        <button type="button" class="tile" data-add="support:roller"><span class="g" data-glyph="roller"></span><span>Roller</span></button>
+        <button type="button" class="tile" data-add="support:simple"><span class="g" data-glyph="simple"></span><span>Simple</span></button>
+        <button type="button" class="tile" data-add="support:fixed"><span class="g" data-glyph="fixed"></span><span>Fixed</span></button>
+        <button type="button" class="tile" data-add="hinge"><span class="g" data-glyph="hinge"></span><span>Hinge</span></button>
+      </div>
+      <div class="pal-group"><span class="pal-h">Loads</span>
+        <button type="button" class="tile" data-add="load:point"><span class="g" data-glyph="point"></span><span>Point load</span></button>
+        <button type="button" class="tile" data-add="load:udl"><span class="g" data-glyph="udl"></span><span>UDL</span></button>
+        <button type="button" class="tile" data-add="load:uvl"><span class="g" data-glyph="uvl"></span><span>UVL</span></button>
+        <button type="button" class="tile" data-add="load:moment"><span class="g" data-glyph="moment"></span><span>Couple</span></button>
+      </div>
+      <p class="pal-hint">Tap to add, or drag onto the beam.</p>
+    </div>
+
+    <div class="viewbar" role="group" aria-label="Display options">
+      <button type="button" class="btn primary" id="stepBtn">Draw it step by step</button>
+      <label class="tgl"><input type="checkbox" id="vShape" checked><span>Deflected shape on beam</span></label>
+      <label class="tgl"><input type="checkbox" id="vSlope"><span>Slope diagram</span></label>
+      <label class="tgl"><input type="checkbox" id="vPerEI"><span>Deflection as ×1/<i class="mv">EI</i></span></label>
+      <label class="tgl"><input type="checkbox" id="vTension"><span>BMD on tension side</span></label>
+    </div>
+
+    <div class="stepper card" id="stepper" hidden></div>
+    <div class="practice card" id="practiceCard" hidden></div>
+
+    <div class="readout" id="readout" aria-live="off"></div>
+    <div class="diagrams" id="diagrams">
+      <figure class="panel" data-kind="load">
+        <figcaption><span>Loading and reactions</span><span class="cap-note" id="loadNote"></span></figcaption>
+        <svg id="svgLoad" class="plot" role="img" aria-label="The beam with its supports, loads and reactions" tabindex="0"></svg>
+      </figure>
+      <figure class="panel" data-kind="V">
+        <figcaption><span><span class="key q-v"></span>Shear force <i class="mv">V</i> (kN)</span><span class="cap-note">slope of the SFD = −<i class="mv">w</i></span></figcaption>
+        <svg id="svgV" class="plot" role="img" aria-label="Shear force diagram"></svg>
+      </figure>
+      <figure class="panel" data-kind="M">
+        <figcaption><span><span class="key q-m"></span>Bending moment <i class="mv">M</i> (kN·m)</span><span class="cap-note" id="bmdNote">slope of the BMD = <i class="mv">V</i>; sagging +</span></figcaption>
+        <svg id="svgM" class="plot" role="img" aria-label="Bending moment diagram"></svg>
+      </figure>
+      <figure class="panel" data-kind="T" hidden>
+        <figcaption><span><span class="key q-t"></span><span id="capT">Slope <i class="mv">θ</i> (×10⁻³ rad)</span></span><span class="cap-note">slope of this curve = <i class="mv">M</i>/<i class="mv">EI</i></span></figcaption>
+        <svg id="svgT" class="plot" role="img" aria-label="Slope diagram"></svg>
+      </figure>
+      <figure class="panel" data-kind="Y">
+        <figcaption><span><span class="key q-y"></span><span id="capY">Deflection <i class="mv">y</i> (mm)</span></span><span class="cap-note">○ inflection where <i class="mv">M</i> = 0</span></figcaption>
+        <svg id="svgY" class="plot" role="img" aria-label="Deflection diagram"></svg>
+      </figure>
+    </div>
+
+    <section class="card section-card" id="sectionCard" hidden></section>
+  </section>
+</main>
+
+<section class="wrap lower" aria-label="Solution and theory">
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="tabBtn-solution" aria-controls="tab-solution" aria-selected="true" data-tab="solution">Worked solution</button>
+    <button type="button" role="tab" id="tabBtn-theory" aria-controls="tab-theory" aria-selected="false" data-tab="theory">Theory</button>
+  </div>
+  <div class="tabpanel" id="tab-solution" role="tabpanel" aria-labelledby="tabBtn-solution"></div>
+  <div class="tabpanel theory" id="tab-theory" role="tabpanel" aria-labelledby="tabBtn-theory" hidden>
+    <nav class="toc" aria-label="Theory contents">
+      <ol>
+        <li><a href="#th-supports">Supports and reactions</a></li>
+        <li><a href="#th-determinacy">Determinacy and stability</a></li>
+        <li><a href="#th-equiv">Equivalent loads</a></li>
+        <li><a href="#th-signs">Sign convention</a></li>
+        <li><a href="#th-relations">Load, shear and moment</a></li>
+        <li><a href="#th-drawing">Drawing SFD and BMD</a></li>
+        <li><a href="#th-elastic">The elastic curve</a></li>
+        <li><a href="#th-macaulay">Macaulay's method</a></li>
+        <li><a href="#th-standard">Standard results</a></li>
+      </ol>
+    </nav>
+    <article class="prose">
+      <section id="th-supports">
+        <h3>1. Supports and reactions <span class="slide">(slides 14–18)</span></h3>
+        <p>A support stops some movements of the beam. For every movement it stops, it supplies one <b>reaction</b>: a force if it stops a translation, a moment if it stops a rotation. The same list tells you the <b>boundary conditions</b> you will need later for deflection.</p>
+        <div class="tbl-wrap"><table class="tbl supports-tbl">
+          <thead><tr><th>Symbol</th><th>Support</th><th>Prevents</th><th>Reactions</th><th>Deflection conditions</th></tr></thead>
+          <tbody>
+            <tr><td data-glyph="roller"></td><td>Roller</td><td>vertical movement</td><td><i class="mv">R</i> (1)</td><td><i class="mv">y</i> = 0</td></tr>
+            <tr><td data-glyph="simple"></td><td>Simple (knife edge)</td><td>vertical movement</td><td><i class="mv">R</i> (1)</td><td><i class="mv">y</i> = 0</td></tr>
+            <tr><td data-glyph="pinned"></td><td>Pinned (hinged)</td><td>vertical and horizontal movement</td><td><i class="mv">R</i>, <i class="mv">H</i> (2)</td><td><i class="mv">y</i> = 0</td></tr>
+            <tr><td data-glyph="fixed"></td><td>Fixed (built-in)</td><td>both movements and rotation</td><td><i class="mv">R</i>, <i class="mv">H</i>, <i class="mv">M</i> (3)</td><td><i class="mv">y</i> = 0 and <i class="mv">dy</i>/<i class="mv">dx</i> = 0</td></tr>
+            <tr><td data-glyph="hinge"></td><td>Internal hinge</td><td>nothing: it joins two pieces</td><td>none, but <i class="mv">M</i> = 0 there</td><td><i class="mv">y</i> continuous; slope may jump</td></tr>
+          </tbody>
+        </table></div>
+        <p>A free end has no support: there <i class="mv">V</i> = 0 and <i class="mv">M</i> = 0.</p>
+      </section>
+
+      <section id="th-determinacy">
+        <h3>2. Static determinacy and stability <span class="slide">(slides 12–13)</span></h3>
+        <p>A beam in a plane gives three equilibrium equations: Σ<i class="mv">F</i><sub>x</sub> = 0, Σ<i class="mv">F</i><sub>y</sub> = 0 and Σ<i class="mv">M</i> = 0. Each internal hinge gives one more, because the moment there must be zero. Let <i class="mv">r</i> be the number of reaction components and <i class="mv">c</i> the number of hinges:</p>
+        <ul>
+          <li><i class="mv">r</i> &lt; 3 + <i class="mv">c</i>: <b>unstable</b>. There are too few reactions and the beam moves as a mechanism.</li>
+          <li><i class="mv">r</i> = 3 + <i class="mv">c</i>: <b>statically determinate</b>, provided the supports are sensibly arranged. Statics alone gives every reaction.</li>
+          <li><i class="mv">r</i> &gt; 3 + <i class="mv">c</i>: <b>statically indeterminate</b> to degree <i class="mv">r</i> − (3 + <i class="mv">c</i>). The extra equations come from deformation (compatibility), which is why these beams need <i class="mv">EI</i>.</li>
+        </ul>
+        <p>Counting is not enough on its own. If every reaction is <b>parallel</b> (rollers only) the beam cannot resist a sideways push, even when <i class="mv">r</i> = 3. This is an <em>improper constraint</em>. Under purely vertical loads Σ<i class="mv">F</i><sub>x</sub> = 0 holds on its own, so beams resting on rollers or knife edges can still be analysed for vertical loads. The studio says so when it happens. A hinge that leaves one piece with only one support is also a mechanism.</p>
+        <p class="note">Try it: load <b>Continuous</b>. Then change the pinned support to a roller, add a hinge, or delete a support, and watch the badge above the diagrams.</p>
+      </section>
+
+      <section id="th-equiv">
+        <h3>3. Equivalent loads <span class="slide">(slides 21–22)</span></h3>
+        <p>For <b>reactions</b>, a distributed load can be replaced by a single force equal to its area, acting at its centroid.</p>
+        <ul>
+          <li>Uniform load (UDL) <i class="mv">w</i> over length <i class="mv">a</i>: <i class="mv">W</i> = <i class="mv">wa</i>, acting at the middle.</li>
+          <li>Triangular load (UVL) from 0 to <i class="mv">w</i>: <i class="mv">W</i> = ½<i class="mv">wa</i>, acting at <i class="mv">a</i>/3 from the heavy end.</li>
+          <li>Trapezoidal load: split it into a rectangle and a triangle and add the two.</li>
+        </ul>
+        <p class="warn">Do not use the resultant when you work out <i class="mv">V</i> and <i class="mv">M</i> at a section. There, only the part of the load to the left of the cut counts. For a UDL, <i class="mv">w</i>(<i class="mv">x</i> − <i class="mv">a</i>) acts at (<i class="mv">x</i> − <i class="mv">a</i>)/2 from the cut.</p>
+      </section>
+
+      <section id="th-signs">
+        <h3>4. Shear force and bending moment: sign convention</h3>
+        <p>Cut the beam at a distance <i class="mv">x</i> from the left end. The two pieces act on each other with an internal <b>shear force</b> <i class="mv">V</i> and <b>bending moment</b> <i class="mv">M</i>, equal and opposite on the two faces.</p>
+        <figure class="fig" id="figSigns"></figure>
+        <ul>
+          <li><b><i class="mv">V</i> is positive</b> when the resultant of the forces on the <b>left</b> part acts <b>upward</b>. The left part tends to slide up past the right part.</li>
+          <li><b><i class="mv">M</i> is positive (sagging)</b> when the moments of the forces on the left part about the cut are <b>clockwise</b>. The beam bends into a smile: the top is squeezed (compression) and the bottom is stretched (tension). Negative <i class="mv">M</i> is <b>hogging</b>, a frown.</li>
+        </ul>
+        <p>So for any section: <i class="mv">V</i> = Σ(upward forces on the left) and <i class="mv">M</i> = Σ(clockwise moments of the left forces about the cut). Cut a section in the studio by clicking a diagram. It draws that free-body diagram with the numbers filled in.</p>
+      </section>
+
+      <section id="th-relations">
+        <h3>5. How load, shear and moment are related</h3>
+        <p>Look at a short piece of beam of length d<i class="mv">x</i> carrying a downward load <i class="mv">w</i> per metre:</p>
+        <figure class="fig" id="figElement"></figure>
+        <div class="eqblock">
+          <div>Vertical equilibrium: &nbsp;<i class="mv">V</i> − <i class="mv">w</i>&thinsp;d<i class="mv">x</i> − (<i class="mv">V</i> + d<i class="mv">V</i>) = 0 &nbsp;⇒&nbsp; <span class="frac"><span>d<i class="mv">V</i></span><span>d<i class="mv">x</i></span></span> = −<i class="mv">w</i></div>
+          <div>Moments about the right face: &nbsp;<i class="mv">M</i> + <i class="mv">V</i>&thinsp;d<i class="mv">x</i> − <i class="mv">w</i>&thinsp;d<i class="mv">x</i>²/2 − (<i class="mv">M</i> + d<i class="mv">M</i>) = 0 &nbsp;⇒&nbsp; <span class="frac"><span>d<i class="mv">M</i></span><span>d<i class="mv">x</i></span></span> = <i class="mv">V</i></div>
+        </div>
+        <p>These two lines explain every shape you will see:</p>
+        <ul>
+          <li>The <b>slope of the SFD</b> is −<i class="mv">w</i>. With no load the SFD is flat; under a UDL it slopes down steadily.</li>
+          <li>The <b>slope of the BMD</b> is <i class="mv">V</i>. Where <i class="mv">V</i> &gt; 0 the BMD rises; where <i class="mv">V</i> &lt; 0 it falls.</li>
+          <li>So <b><i class="mv">M</i> is a maximum or minimum where <i class="mv">V</i> = 0</b>, or where <i class="mv">V</i> jumps through zero under a point load.</li>
+          <li>Integrating: <i class="mv">M</i><sub>B</sub> − <i class="mv">M</i><sub>A</sub> = (area of the SFD between A and B). This is the <b>area method</b>.</li>
+          <li>A point load <i class="mv">P</i> makes <i class="mv">V</i> <b>jump</b> by <i class="mv">P</i> and puts a <b>corner</b> in the BMD. A couple <i class="mv">C</i> makes <i class="mv">M</i> jump by <i class="mv">C</i> and leaves <i class="mv">V</i> unchanged.</li>
+        </ul>
+      </section>
+
+      <section id="th-drawing">
+        <h3>6. Drawing SFD and BMD by hand</h3>
+        <ol>
+          <li>Find all the reactions (Σ<i class="mv">F</i><sub>y</sub> = 0, Σ<i class="mv">M</i> = 0, plus compatibility if the beam is indeterminate).</li>
+          <li>Mark every <b>key point</b>: supports, point loads, couples, and the ends of distributed loads.</li>
+          <li>Start at the left end with <i class="mv">V</i> = 0 and <i class="mv">M</i> = 0 and move right. At each key point, apply the jumps. Between key points, use the shapes in the table.</li>
+          <li>Get <i class="mv">M</i> at each key point from the area of the SFD. Find the peak moment where <i class="mv">V</i> = 0.</li>
+          <li><b>Check:</b> both diagrams must return to zero at the right end. If they do not, a reaction is wrong.</li>
+        </ol>
+        <div class="tbl-wrap"><table class="tbl shapes-tbl">
+          <thead><tr><th>Between key points</th><th>SFD</th><th>BMD</th></tr></thead>
+          <tbody>
+            <tr><td>No load</td><td data-shape="flat">horizontal line</td><td data-shape="line">straight sloping line</td></tr>
+            <tr><td>Uniform load <i class="mv">w</i></td><td data-shape="line">straight line, slope −<i class="mv">w</i></td><td data-shape="parab">parabola (2nd degree)</td></tr>
+            <tr><td>Linearly varying load</td><td data-shape="parab">parabola</td><td data-shape="cubic">cubic (3rd degree)</td></tr>
+            <tr><td>At a point load</td><td data-shape="jump">vertical jump</td><td data-shape="kink">corner (kink)</td></tr>
+            <tr><td>At a couple</td><td data-shape="flat">no change</td><td data-shape="jump">vertical jump</td></tr>
+          </tbody>
+        </table></div>
+        <p>The <b>Draw it step by step</b> button above the diagrams walks through these rules on whatever beam you have built.</p>
+        <p>A <b>point of contraflexure</b> is where <i class="mv">M</i> changes sign. There the beam changes from sagging to hogging, and the deflected shape has an inflection point.</p>
+      </section>
+
+      <section id="th-elastic">
+        <h3>7. Deflection: the elastic curve</h3>
+        <p>A bending moment curves the beam. For a linearly elastic beam (Hooke's law, σ = <i class="mv">E</i>ε), the curvature is proportional to the moment: 1/ρ = <i class="mv">M</i>/<i class="mv">EI</i>. For small slopes the curvature is <i class="mv">d</i>²<i class="mv">y</i>/<i class="mv">dx</i>², which gives the <b>equation of the elastic curve</b>:</p>
+        <div class="eqblock center"><div><i class="mv">EI</i> <span class="frac"><span>d²<i class="mv">y</i></span><span>d<i class="mv">x</i>²</span></span> = <i class="mv">M</i>(<i class="mv">x</i>)</div></div>
+        <ul>
+          <li><i class="mv">E</i> is <b>Young's modulus</b> of the material (steel ≈ 200 GPa, concrete ≈ 30 GPa, timber ≈ 10 GPa).</li>
+          <li><i class="mv">I</i> is the <b>second moment of area</b> of the cross-section about its neutral axis. For a rectangle <i class="mv">b</i> × <i class="mv">h</i>, <i class="mv">I</i> = <i class="mv">bh</i>³/12.</li>
+          <li>The product <i class="mv">EI</i> is the <b>flexural rigidity</b>, the beam's resistance to bending. Double <i class="mv">EI</i> and every deflection halves.</li>
+          <li>Here <i class="mv">y</i> is measured <b>upward</b>, so sagging (<i class="mv">M</i> &gt; 0) makes the curve concave up and a loaded beam's <i class="mv">y</i> is negative. Books that measure <i class="mv">y</i> downward write <i class="mv">EI</i>&thinsp;<i class="mv">y</i>″ = −<i class="mv">M</i>. The physics is the same.</li>
+        </ul>
+        <p>Integrating once gives <i class="mv">EI</i>·(slope); integrating again gives <i class="mv">EI</i>·<i class="mv">y</i>. Each integration adds a constant, and the supports fix them: <i class="mv">y</i> = 0 at every support, and slope = 0 at a fixed support. For an indeterminate beam, the same conditions also give the extra reactions.</p>
+        <p class="note">Units check: <i class="mv">EI</i> in kN·m² = <i class="mv">E</i> in GPa × <i class="mv">I</i> in 10⁶ mm⁴. For example, 200 × 100 = 20 000 kN·m².</p>
+      </section>
+
+      <section id="th-macaulay">
+        <h3>8. Macaulay's method</h3>
+        <p>Writing a separate <i class="mv">M</i>(<i class="mv">x</i>) for every segment gives two constants per segment. Macaulay's method writes <b>one</b> expression for the whole beam, so there are only two constants, <i class="mv">C</i><sub>1</sub> and <i class="mv">C</i><sub>2</sub>.</p>
+        <ol>
+          <li>Put the origin at the left end. Write <i class="mv">M</i>(<i class="mv">x</i>) for a section in the <b>last</b> segment, including every force to its left, as a Macaulay bracket ⟨<i class="mv">x</i> − <i class="mv">a</i>⟩.</li>
+          <li>A bracket is <b>zero whenever <i class="mv">x</i> &lt; <i class="mv">a</i></b>. That switches each term on only after its force has been passed.</li>
+          <li>Integrate brackets as a whole, never expanding them: ∫⟨<i class="mv">x</i> − <i class="mv">a</i>⟩<sup><i class="mv">n</i></sup> d<i class="mv">x</i> = ⟨<i class="mv">x</i> − <i class="mv">a</i>⟩<sup><i class="mv">n</i>+1</sup>/(<i class="mv">n</i> + 1).</li>
+          <li>A point load <i class="mv">P</i> at <i class="mv">a</i> gives −<i class="mv">P</i>⟨<i class="mv">x</i> − <i class="mv">a</i>⟩. A UDL starting at <i class="mv">a</i> gives −<i class="mv">w</i>⟨<i class="mv">x</i> − <i class="mv">a</i>⟩²/2. A clockwise couple <i class="mv">C</i> gives +<i class="mv">C</i>⟨<i class="mv">x</i> − <i class="mv">a</i>⟩⁰.</li>
+          <li>A UDL that <b>stops</b> at <i class="mv">b</i>: let it run to the end, then add an equal upward UDL from <i class="mv">b</i>, giving +<i class="mv">w</i>⟨<i class="mv">x</i> − <i class="mv">b</i>⟩²/2.</li>
+          <li>Find <i class="mv">C</i><sub>1</sub> and <i class="mv">C</i><sub>2</sub> from the boundary conditions. The maximum deflection is where d<i class="mv">y</i>/d<i class="mv">x</i> = 0, or at a free end.</li>
+        </ol>
+        <p>The <b>Worked solution</b> tab applies exactly these steps to your beam, showing every term and constant.</p>
+      </section>
+
+      <section id="th-standard">
+        <h3>9. Standard results</h3>
+        <p>Use these to check hand calculations. Click <b>Try it</b> to load the case into the studio and compare it with the formula.</p>
+        <div class="tbl-wrap"><table class="tbl std-tbl">
+          <thead><tr><th>Beam and load</th><th>Largest |<i class="mv">M</i>|</th><th>Largest deflection</th><th></th></tr></thead>
+          <tbody>
+            <tr><td>Simply supported, central point load <i class="mv">P</i></td><td><i class="mv">PL</i>/4 at midspan</td><td><i class="mv">PL</i>³/48<i class="mv">EI</i></td><td><button type="button" class="btn small" data-std="ssP">Try it</button></td></tr>
+            <tr><td>Simply supported, UDL <i class="mv">w</i></td><td><i class="mv">wL</i>²/8 at midspan</td><td>5<i class="mv">wL</i>⁴/384<i class="mv">EI</i></td><td><button type="button" class="btn small" data-std="ssW">Try it</button></td></tr>
+            <tr><td>Simply supported, triangular 0 → <i class="mv">w</i></td><td><i class="mv">wL</i>²/9√3 at <i class="mv">L</i>/√3</td><td>0.00652 <i class="mv">wL</i>⁴/<i class="mv">EI</i></td><td><button type="button" class="btn small" data-std="ssT">Try it</button></td></tr>
+            <tr><td>Cantilever, end load <i class="mv">P</i></td><td><i class="mv">PL</i> at the wall (hogging)</td><td><i class="mv">PL</i>³/3<i class="mv">EI</i> at the tip</td><td><button type="button" class="btn small" data-std="cP">Try it</button></td></tr>
+            <tr><td>Cantilever, UDL <i class="mv">w</i></td><td><i class="mv">wL</i>²/2 at the wall (hogging)</td><td><i class="mv">wL</i>⁴/8<i class="mv">EI</i> at the tip</td><td><button type="button" class="btn small" data-std="cW">Try it</button></td></tr>
+            <tr><td>Fixed both ends, central point load <i class="mv">P</i></td><td><i class="mv">PL</i>/8 at the ends and midspan</td><td><i class="mv">PL</i>³/192<i class="mv">EI</i></td><td><button type="button" class="btn small" data-std="ffP">Try it</button></td></tr>
+            <tr><td>Fixed both ends, UDL <i class="mv">w</i></td><td><i class="mv">wL</i>²/12 at the ends (<i class="mv">wL</i>²/24 at midspan)</td><td><i class="mv">wL</i>⁴/384<i class="mv">EI</i></td><td><button type="button" class="btn small" data-std="ffW">Try it</button></td></tr>
+            <tr><td>Propped cantilever, UDL <i class="mv">w</i></td><td><i class="mv">wL</i>²/8 at the wall (9<i class="mv">wL</i>²/128 in the span)</td><td><i class="mv">wL</i>⁴/185<i class="mv">EI</i></td><td><button type="button" class="btn small" data-std="pcW">Try it</button></td></tr>
+          </tbody>
+        </table></div>
+        <p class="note"><b>Superposition:</b> in the linear-elastic range, the effects of several loads simply add. The studio does not rely on this, since it solves every beam directly, but it is a quick way to check an answer.</p>
+      </section>
+    </article>
+  </div>
+</section>
+
+<footer class="wrap foot">
+  <p><b>Conventions used everywhere in this studio.</b> <i class="mv">x</i> is measured from the left end. Loads are positive downward and reactions positive upward. <i class="mv">V</i> is positive when the resultant force on the left part acts upward. <i class="mv">M</i> is positive for sagging. Couples are positive clockwise. <i class="mv">y</i> is positive upward, with <i class="mv">EI</i>&thinsp;<i class="mv">y</i>″ = <i class="mv">M</i>. Units are kN, m, kN·m and mm.</p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="ghost-drag" id="ghost" aria-hidden="true"></div>
+
+<script>
+/*__JS__*/
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "beam-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Interactive Beam Studio: build any beam and study its reactions, shear force and bending moment diagrams, and deflection, with full worked solutions.",
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.js",
+    "test": "node test/solver.test.js"
+  },
+  "devDependencies": {
+    "@fontsource/barlow": "^5.3.0",
+    "@fontsource/barlow-semi-condensed": "^5.3.0",
+    "@fontsource/source-serif-4": "^5.3.0"
+  }
+}
