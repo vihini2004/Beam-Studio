@@ -2,7 +2,7 @@
 
 Build any beam, then study its reactions, shear force diagram, bending moment diagram and deflection, with a complete worked solution for every beam you build.
 
-**[Open the tool online](https://vihini2004.github.io/beam-studio/)**, or download [`index.html`](index.html) and open it in any browser. It works offline.
+**[Open the tool online](https://vihini2004.github.io/Beam-Studio/#b=eyJMIjoxMCwiRSI6MjAwLCJJIjoxMDAsInMiOltbInAiLDBdLFsiciIsMTBdXSwiaCI6W10sImwiOltbInAiLDQsMjBdLFsiZCIsNiwxMCw1LDVdXX0)**, or download [`index.html`](index.html) and open it in any browser. It works offline.
 
 ![Dragging a point load along a simply supported beam: the reactions, shear force diagram, bending moment diagram and deflection update as it moves](docs/images/demo.gif)
 
