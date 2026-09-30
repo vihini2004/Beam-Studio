@@ -61,15 +61,9 @@ Built as a learning tool for **AMT/IMT 121 β: Classical Mechanics II (Statics)*
 
 ## How to use it
 
-**Online:** open <https://YOUR-USERNAME.github.io/beam-studio/>.
+**Online:** open <https://vihini2004.github.io/Beam-Studio/>.
 
 **Offline:** download [`index.html`](index.html) and double-click it. The code and fonts are all inside that one file, so it needs no internet connection, installation or account. It can be shared on a USB stick or through a course page.
-
-**Host it yourself with GitHub Pages:**
-
-1. Push this repository to GitHub.
-2. Go to **Settings → Pages**. Under *Build and deployment*, choose **Deploy from a branch**, then branch **main** and folder **/ (root)**, and save.
-3. After a minute or two the tool is live at `https://YOUR-USERNAME.github.io/beam-studio/`.
 
 **Quick start:**
 
